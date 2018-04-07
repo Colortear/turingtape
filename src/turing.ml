@@ -15,11 +15,10 @@ open Machine
  *      incorrectly print_error
 *)
 
-let exit_error() =
-  print_endline "Machine stopped: end state was impossible."
-
-let exit_success() =
-  print_endline "End state reached."
+let exit_status code =
+  match code with
+  | -1 - > print_endline "Machine stopped: end state was impossible."
+  | 1 -> print_endline "End state reached."
 
 let () =
   let arg_ok = Utils.args_valid Sys.argv in
@@ -27,13 +26,11 @@ let () =
     begin
       let initial_state = State.return machine in
       let rec transition state_ok state =
-        if state_ok = -1 then
-          exit_error()
-        else if state_ok = 0 then
-          exit_success()
+        if state_ok = -1 || state_ok = 0 then
+          exit_status state_ok
         else
           let new_state = State.bind state (State.next machine) in
-          transition (State.verify_state state new_state = 1) new_state
+          transition (State.verify_state state) new_state
       in
       transition 1 initial_state
     end
