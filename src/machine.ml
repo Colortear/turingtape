@@ -1,4 +1,3 @@
-open Core.Std
 open Yojson.Basic.Util
 open Yojson.Basic
 
@@ -7,7 +6,7 @@ module type MACHINE =
     type dir = Left | Right
     type s =
       | Nil
-      | Trans of string * ((string * string * string * dir) list) list
+      | Trans of (string * ((string * string * string * dir) list)) Hashtbl.t (* figure out how to give this complainger two args *)
     val json_dump : Yojson.Basic.json
     val name : string
     val alphabet : string list
@@ -21,7 +20,7 @@ module type MACHINE =
 
 let member_to_string json name =
   match json |> member name |> to_string with
-  | Type_error -> ""
+  | _ -> ""
   | x -> x
 
 let member_to_string_list json name =
@@ -34,9 +33,9 @@ module MachineMake : MACHINE = functor () ->
   struct
     type dir = Nil | Left | Right
     type s =
-      | Nil
+      Null
       | Trans of
-          (string,((string * string * string * dir) list)) Hashtbl.t
+          (string * ((string * string * string * dir) list)) Hashtbl.t
 
     let json_dump = Yojson.Basic.from_file Sys.argv.(1)
     let name = member_to_string json_dump "name"
@@ -47,7 +46,7 @@ module MachineMake : MACHINE = functor () ->
     let finals = member_to_string_list json_dump "finals"
     let trans =
       let tbl = Hashtbl.create 1720 in
-      let trans_list = member "transitions" in
+      let trans_list = json_dump |> member "transitions" |> to_assoc in
       let rec aux table l =
         match l with
         | [] -> table
@@ -71,10 +70,11 @@ module MachineMake : MACHINE = functor () ->
                (action))::(loop tl2)
           in
           let (str,jobj) = hd in
-          Hashtbl.add (aux table tl) str (loop(member_to_list jobj))
+          Hashtbl.add table str (loop(member_to_list jobj str));
+          aux table tl
       in
-      let ret = aux tbl in
-      if ret = Null then Nil
+      let ret = aux tbl trans_list in
+      if ret = Null then Null
       else Trans(ret)
 
     let validate_json () =
