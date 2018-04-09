@@ -1,5 +1,6 @@
 open Core.Std
 open Yojson.Basic.Util
+open Yojson.Basic
 
 module type MACHINE =
   sig
@@ -23,55 +24,65 @@ let member_to_string json name =
   | Type_error -> ""
   | x -> x
 
-let member_to_list json name =
+let member_to_string_list json name =
   json |> member name |> to_list |> filter_string
+
+let member_to_list json name =
+  json |> member name |> to_list
  
 module MachineMake : MACHINE = functor () ->
   struct
-    type dir = Left | Right
+    type dir = Nil | Left | Right
     type s =
       | Nil
       | Trans of
-          (string * ((string * string * string * dir) list) Hashtble.t
-     (* | Trans of ( string * ((string * string * string * dir) list )) list*)
+          (string,((string * string * string * dir) list)) Hashtbl.t
+
     let json_dump = Yojson.Basic.from_file Sys.argv.(1)
-    let name =
-      match json_dump |> member "name" |> to_string with
-      | Type_error -> ""
-      | x -> x
-    let alphabet = json_dump |> member "alphabet" |>
-                   to_list |> filter_string
-    let blank =
-      match json_dump |> member "blank" |> to_string with
-      | Type_error -> ""
-      | x -> x
-    let states = json_dump |> member "states" |>
-                 to_list |> filter_string
-    let initial =
-      match json_dump |> member "initial" |> to_string with
-      | Type_error -> ""
-      | x -> x
-    let finals = json_dump |> member "finals" |>
-                 to_list |> filter_string
+    let name = member_to_string json_dump "name"
+    let alphabet = member_to_string_list json_dump "alphabet"
+    let blank = member_to_string json_dump "blank"
+    let states = member_to_string_list json_dump "states"
+    let initial = member_to_string json_dump "initial"
+    let finals = member_to_string_list json_dump "finals"
     let trans =
       let tbl = Hashtbl.create 1720 in
-      let transitions = json |> member "transitions" |> to_list in
-      let rec aux table =
-        match transitions with
+      let trans_list = member "transitions" in
+      let rec aux table l =
+        match l with
         | [] -> table
         | hd::tl ->
-          let hd = hd |> member 
-          Hashtbl.add (aux table
+          let rec loop ll =
+            match ll with
+            | [] -> []
+            | hd2::tl2 ->
+              let action =
+                begin
+                  if String.compare (member_to_string hd2 "action") "LEFT" = 0
+                  then Left
+                  else if String.compare (member_to_string hd2 "action") "RIGHT" = 0
+                  then Right
+                  else Nil
+                end
+              in
+              ((member_to_string hd2 "read"),
+               (member_to_string hd2 "to_state"),
+               (member_to_string hd2 "write"),
+               (action))::(loop tl2)
+          in
+          let (str,jobj) = hd in
+          Hashtbl.add (aux table tl) str (loop(member_to_list jobj))
       in
       let ret = aux tbl in
       if ret = Null then Nil
       else Trans(ret)
+
     let validate_json () =
       if json_dump = null || (String.length name = 0) ||
          alphabet = [] || (String.length blank != 1)
          || states = [] || (String.length initial = 0) ||
          finals = [] || trans = Nil then -1
-      else 1
+      else 1 (* needs so many error cases added to this omg lmao fuc *)
   end
 
 module Machine : MACHINE = MachineMake()
