@@ -1,12 +1,12 @@
 open Yojson.Basic.Util
 open Yojson.Basic
 
-module type MACHINE =
+module type MACHINE = functor () ->
   sig
-    type dir = Left | Right
+    type dir = Nil | Left | Right
     type s =
-      | Nil
-      | Trans of (string * ((string * string * string * dir) list)) Hashtbl.t (* figure out how to give this complainger two args *)
+      | Null
+      | Trans of (string, (string * string * string * dir) list) Hashtbl.t
     val json_dump : Yojson.Basic.json
     val name : string
     val alphabet : string list
@@ -19,9 +19,9 @@ module type MACHINE =
   end
 
 let member_to_string json name =
-  match json |> member name |> to_string with
-  | _ -> ""
-  | x -> x
+  match json |> member name |> to_string_option with
+  | None -> ""
+  | Some x -> x
 
 let member_to_string_list json name =
   json |> member name |> to_list |> filter_string
@@ -33,9 +33,8 @@ module MachineMake : MACHINE = functor () ->
   struct
     type dir = Nil | Left | Right
     type s =
-      Null
-      | Trans of
-          (string * ((string * string * string * dir) list)) Hashtbl.t
+      | Null
+      | Trans of (string, (string * string * string * dir) list) Hashtbl.t
 
     let json_dump = Yojson.Basic.from_file Sys.argv.(1)
     let name = member_to_string json_dump "name"
@@ -73,16 +72,17 @@ module MachineMake : MACHINE = functor () ->
           Hashtbl.add table str (loop(member_to_list jobj str));
           aux table tl
       in
-      let ret = aux tbl trans_list in
+      Trans(aux tbl trans_list)
+(*      let ret = aux tbl trans_list in
       if ret = Null then Null
-      else Trans(ret)
+      else Trans(ret)*)
 
     let validate_json () =
-      if json_dump = null || (String.length name = 0) ||
+      if (*json_dump = Null ||*) (String.length name = 0) ||
          alphabet = [] || (String.length blank != 1)
          || states = [] || (String.length initial = 0) ||
-         finals = [] || trans = Nil then -1
-      else 1 (* needs so many error cases added to this omg lmao fuc *)
+         finals = [] (*|| trans = Nil*) then -1
+      else 1 (*needs so many error cases added to this omg lmao fuc *)
   end
 
-module Machine : MACHINE = MachineMake()
+module Machine = MachineMake()
