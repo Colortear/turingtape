@@ -1,12 +1,34 @@
+(*
+ *   This file is gross pls save yourself and don't try reading mucch of it.
+ *   It contains many impurities.
+ *)
+
+(* need to handle exceptions in the utilty istring function calls *)
+
+type dir = Nil | Left | Right
+
+type s =
+      | Null
+      | Trans of (string, (string * string * string * dir) list) Hashtbl.t
+
+
 open Yojson.Basic.Util
 open Yojson.Basic
 
-module type MACHINE = functor () ->
+module type JSON =
   sig
-    type dir = Nil | Left | Right
-    type s =
-      | Null
-      | Trans of (string, (string * string * string * dir) list) Hashtbl.t
+    val j : Yojson.Basic.json
+  end
+
+module Dump : JSON =
+  struct
+    (*change to: *)
+(*    let json_dump = Yojson.Basic.from_file Sys.argv.(1)*)
+    let j = Yojson.Basic.from_file "../machines/unary_sub.json"
+  end
+
+module type MACHINE = functor (Dump : JSON) ->
+  sig
     val json_dump : Yojson.Basic.json
     val name : string
     val alphabet : string list
@@ -29,14 +51,9 @@ let member_to_string_list json name =
 let member_to_list json name =
   json |> member name |> to_list
  
-module MachineMake : MACHINE = functor () ->
+module MachineMake : MACHINE = functor (Dump : JSON) ->
   struct
-    type dir = Nil | Left | Right
-    type s =
-      | Null
-      | Trans of (string, (string * string * string * dir) list) Hashtbl.t
-
-    let json_dump = Yojson.Basic.from_file Sys.argv.(1)
+    let json_dump = Dump.j
     let name = member_to_string json_dump "name"
     let alphabet = member_to_string_list json_dump "alphabet"
     let blank = member_to_string json_dump "blank"
@@ -73,9 +90,6 @@ module MachineMake : MACHINE = functor () ->
           aux table tl
       in
       Trans(aux tbl trans_list)
-(*      let ret = aux tbl trans_list in
-      if ret = Null then Null
-      else Trans(ret)*)
 
     let validate_json () =
       if (*json_dump = Null ||*) (String.length name = 0) ||
@@ -85,4 +99,4 @@ module MachineMake : MACHINE = functor () ->
       else 1 (*needs so many error cases added to this omg lmao fuc *)
   end
 
-module Machine = MachineMake()
+module Machine = MachineMake(Dump)
