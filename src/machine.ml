@@ -45,11 +45,20 @@ let member_to_string json name =
   | None -> ""
   | Some x -> x
 
-let member_to_string_list json name =
-  json |> member name |> to_list |> filter_string
-
 let member_to_list json name =
   json |> member name |> to_list
+
+let member_to_string_list json name =
+  let l = member_to_list json name in
+  let rec aux ll =
+    match ll with
+    | [] -> []
+    | hd::tl ->
+      match to_string_option hd with
+      | None -> [""]
+      | Some x -> x::(aux tl)
+  in
+  aux l
  
 module MachineMake : MACHINE = functor (Dump : JSON) ->
   struct
@@ -59,10 +68,11 @@ module MachineMake : MACHINE = functor (Dump : JSON) ->
     let blank = member_to_string json_dump "blank"
     let states = member_to_string_list json_dump "states"
     let initial = member_to_string json_dump "initial"
-    let finals = member_to_string_list json_dump "finals"
+    let finals = member_to_string_list json_dump "final"
     let trans =
       let tbl = Hashtbl.create 1720 in
-      let trans_list = json_dump |> member "transitions" |> to_assoc in
+      let trans_obj = json_dump |> member "transitions" in
+      let trans_list = trans_obj |> to_assoc in
       let rec aux table l =
         match l with
         | [] -> table
@@ -86,7 +96,7 @@ module MachineMake : MACHINE = functor (Dump : JSON) ->
                (action))::(loop tl2)
           in
           let (str,jobj) = hd in
-          Hashtbl.add table str (loop(member_to_list jobj str));
+          Hashtbl.add table str (loop(member_to_list trans_obj str));
           aux table tl
       in
       Trans(aux tbl trans_list)
