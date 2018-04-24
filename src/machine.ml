@@ -5,40 +5,39 @@
 
 (* need to handle exceptions in the utilty istring function calls *)
 
-type dir = Nil | Left | Right
-
-type s =
-      | Null
-      | Trans of (string, (string * string * string * dir) list) Hashtbl.t
-
-
 open Yojson.Basic.Util
 open Yojson.Basic
 
+type dir = Nil | Left | Right
+
+type s =
+  | Null
+  | Trans of (string, (string * string * string * dir) list) Hashtbl.t
+
 module type JSON =
-  sig
-    val j : Yojson.Basic.json
-  end
+sig
+  val j : Yojson.Basic.json
+end
 
 module Dump : JSON =
-  struct
-    (*change to: *)
-(*    let json_dump = Yojson.Basic.from_file Sys.argv.(1)*)
-    let j = Yojson.Basic.from_file "../machines/unary_sub.json"
-  end
+struct
+  (*change to: *)
+  (*    let json_dump = Yojson.Basic.from_file Sys.argv.(1)*)
+  let j = Yojson.Basic.from_file "../machines/unary_sub.json"
+end
 
 module type MACHINE = functor (Dump : JSON) ->
-  sig
-    val json_dump : Yojson.Basic.json
-    val name : string
-    val alphabet : string list
-    val blank : string
-    val states : string list
-    val initial : string
-    val finals : string list
-    val trans : s
-    val validate_json : unit -> int
-  end
+sig
+  val json_dump : Yojson.Basic.json
+  val name : string
+  val alphabet : string list
+  val blank : string
+  val states : string list
+  val initial : string
+  val finals : string list
+  val trans : s
+  val validate_json : unit -> int
+end
 
 let member_to_string json name =
   match json |> member name |> to_string_option with
@@ -59,54 +58,133 @@ let member_to_string_list json name =
       | Some x -> x::(aux tl)
   in
   aux l
- 
-module MachineMake : MACHINE = functor (Dump : JSON) ->
-  struct
-    let json_dump = Dump.j
-    let name = member_to_string json_dump "name"
-    let alphabet = member_to_string_list json_dump "alphabet"
-    let blank = member_to_string json_dump "blank"
-    let states = member_to_string_list json_dump "states"
-    let initial = member_to_string json_dump "initial"
-    let finals = member_to_string_list json_dump "final"
-    let trans =
-      let tbl = Hashtbl.create 1720 in
-      let trans_obj = json_dump |> member "transitions" in
-      let trans_list = trans_obj |> to_assoc in
-      let rec aux table l =
-        match l with
-        | [] -> table
-        | hd::tl ->
-          let rec loop ll =
-            match ll with
-            | [] -> []
-            | hd2::tl2 ->
-              let action =
-                begin
-                  if String.compare (member_to_string hd2 "action") "LEFT" = 0
-                  then Left
-                  else if String.compare (member_to_string hd2 "action") "RIGHT" = 0
-                  then Right
-                  else Nil
-                end
-              in
-              ((member_to_string hd2 "read"),
-               (member_to_string hd2 "to_state"),
-               (member_to_string hd2 "write"),
-               (action))::(loop tl2)
-          in
-          let (str,jobj) = hd in
-          Hashtbl.add table str (loop(member_to_list trans_obj str));
-          aux table tl
-      in
-      Trans(aux tbl trans_list)
 
-    let validate_json () =
-      if (*json_dump = Null ||*) (String.length name = 0) ||
-         alphabet = [] || (String.length blank != 1)
-         || states = [] || (String.length initial = 0) ||
-         finals = [] (*|| trans = Nil*) then -1
-      else 1 (*needs so many error cases added to this omg lmao fuc *)
-  end
+module MachineMake : MACHINE = functor (Dump : JSON) ->
+struct
+  let json_dump = Dump.j
+  let name = member_to_string json_dump "name"
+  let alphabet = member_to_string_list json_dump "alphabet"
+  let blank = member_to_string json_dump "blank"
+  let states = member_to_string_list json_dump "states"
+  let initial = member_to_string json_dump "initial"
+  let finals = member_to_string_list json_dump "final"
+  let trans =
+    let tbl = Hashtbl.create 1720 in
+    let trans_obj = json_dump |> member "transitions" in
+    let trans_list = trans_obj |> to_assoc in
+    let rec aux table l =
+      match l with
+      | [] -> table
+      | hd::tl ->
+        let rec loop ll =
+          match ll with
+          | [] -> []
+          | hd2::tl2 ->
+            let action =
+              begin
+                if String.compare (member_to_string hd2 "action") "LEFT" = 0
+                then Left
+                else if String.compare (member_to_string hd2 "action") "RIGHT" = 0
+                then Right
+                else Nil
+              end
+            in
+            ((member_to_string hd2 "read"),
+             (member_to_string hd2 "to_state"),
+             (member_to_string hd2 "write"),
+             (action))::(loop tl2)
+        in
+        let (str,jobj) = hd in
+        Hashtbl.add table str (loop(member_to_list trans_obj str));
+        aux table tl
+    in
+    Trans(aux tbl trans_list)
+
+  let validate_json () =
+    if (*json_dump = Null ||*) (String.length name = 0) ||
+       alphabet = [] || (String.length blank != 1) ||
+       states = [] || (String.length initial = 0) ||
+       finals = [] (*|| trans = Nil*) then -1
+    else 1 (*needs so many error cases added to this omg lmao fuc *)
+end
 
 module Machine = MachineMake(Dump)
+
+(*move the below code to a debug file for unit testing
+ *
+ * module type MACHINE = functor (Dump : JSON) ->
+ *   sig
+ *     val json_dump : Yojson.Basic.json
+ *     val name : string
+ *     val alphabet : string list
+ *     val blank : string
+ *     val states : string list
+ *     val initial : string
+ *     val finals : string list
+ *     val trans : s
+ *     val validate_json : unit -> int
+ *     end
+*)
+
+
+let print_list l =
+  let rec aux ll =
+    match ll with
+    | [] -> print_endline ""
+    | hd::tl ->
+      begin
+        print_endline hd;
+        aux tl
+      end
+  in
+  aux l
+
+let print_trans t s =
+  match t with
+  | Null -> print_endline "NULL"
+  | Trans(tt) ->
+    let print_from_table h =
+      let rec loop y =
+        match y with
+        | [] -> print_endline ""
+        | hd::tl ->
+          let (read, next_state, write, action) = hd in
+          begin
+            print_endline ("read: "^read);
+            print_endline ("next_state: "^next_state);
+            print_endline ("write: "^write);
+            print_endline "action: ";
+            if action = Left then print_endline "LEFT"
+            else if action = Right then print_endline "RIGHT"
+            else print_endline "NULL";
+            loop tl
+          end
+      in
+      begin
+        print_endline (h^":");
+        loop (Hashtbl.find tt h)
+      end
+    in
+    let rec aux ss =
+      match ss with
+      | [] -> print_endline ""
+      | hd::tl ->
+        begin
+          print_from_table hd;
+          aux tl
+        end
+    in
+    aux s
+
+
+let () =
+  if Machine.validate_json() = 1 then print_endline "Validate Success!"
+  else print_endline "Validate Failure";
+  print_endline Machine.name;
+  print_list Machine.alphabet;
+  print_endline Machine.blank;
+  print_list Machine.states;
+  print_endline Machine.initial;
+  print_list Machine.finals;
+  print_trans Machine.trans Machine.states;
+  print_endline "...........................testing finished";
