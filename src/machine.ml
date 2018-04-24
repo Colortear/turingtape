@@ -101,7 +101,7 @@ struct
     Trans(aux tbl trans_list)
 
   let validate_json () =
-    if (*json_dump = Null ||*) (String.length name = 0) ||
+    if (String.length name = 0) ||
        alphabet = [] || (String.length blank != 1) ||
        states = [] || (String.length initial = 0) ||
        finals = [] (*|| trans = Nil*) then -1
@@ -139,38 +139,40 @@ let print_list l =
   in
   aux l
 
+let print_from_table h tt =
+  let rec loop y =
+    match y with
+    | [] -> print_endline ""
+    | hd::tl ->
+      let (read, next_state, write, action) = hd in
+      begin
+        print_endline ("read: "^read);
+        print_endline ("next_state: "^next_state);
+        print_endline ("write: "^write);
+        print_endline "action: ";
+        if action = Left then print_endline "LEFT"
+        else if action = Right then print_endline "RIGHT"
+        else print_endline "NULL";
+        print_endline "";
+        loop tl
+      end
+  in
+  begin
+    print_endline (h^":");
+    try loop (Hashtbl.find tt h)
+    with Not_found -> print_endline "no_listing"
+  end
+
 let print_trans t s =
   match t with
   | Null -> print_endline "NULL"
   | Trans(tt) ->
-    let print_from_table h =
-      let rec loop y =
-        match y with
-        | [] -> print_endline ""
-        | hd::tl ->
-          let (read, next_state, write, action) = hd in
-          begin
-            print_endline ("read: "^read);
-            print_endline ("next_state: "^next_state);
-            print_endline ("write: "^write);
-            print_endline "action: ";
-            if action = Left then print_endline "LEFT"
-            else if action = Right then print_endline "RIGHT"
-            else print_endline "NULL";
-            loop tl
-          end
-      in
-      begin
-        print_endline (h^":");
-        loop (Hashtbl.find tt h)
-      end
-    in
     let rec aux ss =
       match ss with
       | [] -> print_endline ""
       | hd::tl ->
         begin
-          print_from_table hd;
+          print_from_table hd tt;
           aux tl
         end
     in
