@@ -21,10 +21,8 @@ end
 
 module Dump : JSON =
 struct
-  (*change to: *)
-  (*    let json_dump = Yojson.Basic.from_file Sys.argv.(1)*)
-  let j =
-    try Yojson.Basic.from_file "../machines/test.json" with
+  let j = try Yojson.Basic.from_file Sys.argv.(1)
+    with
       Yojson.Json_error(_) -> `Null
 end
 
@@ -119,8 +117,6 @@ struct
     else 1 (*needs so many error cases added to this omg lmao fuc *)
 end
 
-module Machine = MachineMake(Dump)
-
 (*move the below code to a debug file for unit testing
  *
  * module type MACHINE = functor (Dump : JSON) ->
@@ -135,7 +131,7 @@ module Machine = MachineMake(Dump)
  *     val trans : s
  *     val validate_json : unit -> int
  *     end
-*)
+
 
 
 let print_list l =
@@ -200,4 +196,4 @@ let () =
   print_endline Machine.initial;
   print_list Machine.finals;
   print_trans Machine.trans Machine.states;
-  print_endline "...........................testing finished";
+  print_endline "...........................testing finished";*)

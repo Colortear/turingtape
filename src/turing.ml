@@ -1,4 +1,3 @@
-open Monads
 open Machine
 (* Files as modules: Utils, Machine *)
 
@@ -20,23 +19,30 @@ let exit_status code =
   | -1 - > print_endline "Machine stopped: end state was impossible."
   | 1 -> print_endline "End state reached."
 
+let args_valid args =
+  if Array.length args <> 2 then -1
+  else if String.compare argv.(1) "-h" = 0 then 2
+  else 1
+
+let print_error err =
+  begin
+    print_usage();
+    if err = 2 then
+      print_help();
+  end
+
+let main_loop machine =
+  let module M = (val machine : MACHINE) in
+  let rec transition state_ok state =
+    if state_ok = -1 || state_ok = 0 then
+      exit_status state_ok
+    else
+      let new_state = State.bind state (State.next state) in
+      State.transition (State.verify_state state) new_state
+  in
+  transition 1 (State.return M.trans)
+
 let () =
-  let arg_ok = Utils.args_valid Sys.argv in
-  if arg_ok = 1 then
-    begin
-      let initial_state = State.return machine in
-      let rec transition state_ok state =
-        if state_ok = -1 || state_ok = 0 then
-          exit_status state_ok
-        else
-          let new_state = State.bind state (State.next machine) in
-          transition (State.verify_state state) new_state
-      in
-      transition 1 initial_state
-    end
-  else
-    begin
-      print_usage();
-      if arg_ok = 2 then
-        print_help();
-    end
+  match args_valid Sys.argv with
+  | 1 -> main_loop (module Machine.MakeMachine(Machine.Dump))
+  | _ -> print_error arg_ok
