@@ -11,7 +11,7 @@ open Yojson.Basic
 type dir = Nil | Left | Right
 
 type s =
-  | Null
+  | N
   | Trans of (string, (string * string * string * dir) list) Hashtbl.t
 
 module type JSON =
@@ -23,7 +23,9 @@ module Dump : JSON =
 struct
   (*change to: *)
   (*    let json_dump = Yojson.Basic.from_file Sys.argv.(1)*)
-  let j = Yojson.Basic.from_file "../machines/unary_sub.json"
+  let j =
+    try Yojson.Basic.from_file "../machines/test.json" with
+      Yojson.Json_error(_) -> `Null
 end
 
 module type MACHINE = functor (Dump : JSON) ->
@@ -39,16 +41,23 @@ sig
   val validate_json : unit -> int
 end
 
-let member_to_string json name =
-  match json |> member name |> to_string_option with
+let member_to_string js name =
+  let mem = try member name js
+    with Type_error(_,js) -> `Null
+  in
+  match to_string_option mem with
   | None -> ""
   | Some x -> x
 
-let member_to_list json name =
-  json |> member name |> to_list
+let member_to_list js name =
+  let mem = try member name js 
+    with Type_error(_,js) -> `Null
+  in
+  try to_list mem with
+    Type_error(_,mem) -> []
 
-let member_to_string_list json name =
-  let l = member_to_list json name in
+let member_to_string_list js name =
+  let l = member_to_list js name in
   let rec aux ll =
     match ll with
     | [] -> []
@@ -69,36 +78,38 @@ struct
   let initial = member_to_string json_dump "initial"
   let finals = member_to_string_list json_dump "final"
   let trans =
-    let tbl = Hashtbl.create 1720 in
-    let trans_obj = json_dump |> member "transitions" in
-    let trans_list = trans_obj |> to_assoc in
-    let rec aux table l =
-      match l with
-      | [] -> table
-      | hd::tl ->
-        let rec loop ll =
-          match ll with
-          | [] -> []
-          | hd2::tl2 ->
-            let action =
-              begin
-                if String.compare (member_to_string hd2 "action") "LEFT" = 0
-                then Left
-                else if String.compare (member_to_string hd2 "action") "RIGHT" = 0
-                then Right
-                else Nil
-              end
-            in
-            ((member_to_string hd2 "read"),
-             (member_to_string hd2 "to_state"),
-             (member_to_string hd2 "write"),
-             (action))::(loop tl2)
-        in
-        let (str,jobj) = hd in
-        Hashtbl.add table str (loop(member_to_list trans_obj str));
-        aux table tl
-    in
-    Trans(aux tbl trans_list)
+    if json_dump = `Null then N
+    else
+      let tbl = Hashtbl.create 1720 in
+      let trans_obj = json_dump |> member "transitions" in
+      let trans_list = trans_obj |> to_assoc in
+      let rec aux table l =
+        match l with
+        | [] -> table
+        | hd::tl ->
+          let rec loop ll =
+            match ll with
+            | [] -> []
+            | hd2::tl2 ->
+              let action =
+                begin
+                  if String.compare (member_to_string hd2 "action") "LEFT" = 0
+                  then Left
+                  else if String.compare (member_to_string hd2 "action") "RIGHT" = 0
+                  then Right
+                  else Nil
+                end
+              in
+              ((member_to_string hd2 "read"),
+               (member_to_string hd2 "to_state"),
+               (member_to_string hd2 "write"),
+               (action))::(loop tl2)
+          in
+          let (str,jobj) = hd in
+          Hashtbl.add table str (loop(member_to_list trans_obj str));
+          aux table tl
+      in
+      Trans(aux tbl trans_list)
 
   let validate_json () =
     if (String.length name = 0) ||
@@ -165,7 +176,7 @@ let print_from_table h tt =
 
 let print_trans t s =
   match t with
-  | Null -> print_endline "NULL"
+  | N -> print_endline "NULL"
   | Trans(tt) ->
     let rec aux ss =
       match ss with
