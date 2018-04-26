@@ -21,7 +21,7 @@ let exit_status code =
 
 let args_valid args =
   if Array.length args <> 2 then -1
-  else if String.compare argv.(1) "-h" = 0 then 2
+  else if String.compare Sys.argv.(1) "-h" = 0 then 2
   else 1
 
 let print_error err =
@@ -37,10 +37,10 @@ let main_loop machine =
     if state_ok = -1 || state_ok = 0 then
       exit_status state_ok
     else
-      let new_state = State.bind state (State.next state) in
-      State.transition (State.verify_state state) new_state
+      let new_state = State.next state M.trans in
+      State.transition (State.verify_state new_state) new_state
   in
-  transition 1 (State.return M.trans)
+  transition 1 (State.create M.trans)
 
 let () =
   match args_valid Sys.argv with
