@@ -19,13 +19,6 @@ sig
   val j : Yojson.Basic.json
 end
 
-module Dump : JSON =
-struct
-  let j = try Yojson.Basic.from_file Sys.argv.(1)
-    with
-      Yojson.Json_error(_) -> `Null
-end
-
 module type MACHINE = functor (Dump : JSON) ->
 sig
   val json_dump : Yojson.Basic.json
