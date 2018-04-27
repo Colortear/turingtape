@@ -1,14 +1,9 @@
-(*
- *   This file is gross pls save yourself and don't try reading mucch of it.
- *   It contains many impurities.
- *)
-
-(* need to handle exceptions in the utilty istring function calls *)
-
 open Yojson.Basic.Util
 open Yojson.Basic
 
 type dir = Nil | Left | Right
+
+(*(read * to_state * write * direction) list*)
 
 type s =
   | N
@@ -29,7 +24,7 @@ sig
   val initial : string
   val finals : string list
   val trans : s
-  val validate_json : unit -> int
+  val validate_json_print : unit -> int
 end
 
 let member_to_string js name =
@@ -102,31 +97,17 @@ struct
       in
       Trans(aux tbl trans_list)
 
-  let validate_json () =
+  let validate_json_print () =
     if (String.length name = 0) ||
        alphabet = [] || (String.length blank != 1) ||
        states = [] || (String.length initial = 0) ||
        finals = [] (*|| trans = Nil*) then -1
     else 1 (*needs so many error cases added to this omg lmao fuc *)
+      (*print the json values if successful, fail with -1 otherwise*)
 end
 
 (*move the below code to a debug file for unit testing
  *
- * module type MACHINE = functor (Dump : JSON) ->
- *   sig
- *     val json_dump : Yojson.Basic.json
- *     val name : string
- *     val alphabet : string list
- *     val blank : string
- *     val states : string list
- *     val initial : string
- *     val finals : string list
- *     val trans : s
- *     val validate_json : unit -> int
- *     end
-
-
-
 let print_list l =
   let rec aux ll =
     match ll with

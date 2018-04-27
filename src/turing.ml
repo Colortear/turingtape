@@ -28,8 +28,9 @@ optional arguments:
 
 let exit_status code =
   match code with
+  | -2 -> print_endline "Machine stopped: operation could not be found"
   | -1 -> print_endline "Machine stopped: end state was impossible."
-  | 1 -> print_endline "End state reached."
+  | 0 -> print_endline "............HALT............"
   | _ -> print_endline "this should never happen"
 
 let args_valid args =
@@ -53,15 +54,22 @@ let main_loop() =
       Yojson.Json_error(_) -> `Null
   in
   let module M = MachineMake(struct let j = js end) in
-  print_endline M.name
-(*  let rec transition state_ok state =
-    if state_ok = -1 || state_ok = 0 then
-      exit_status state_ok
-    else
-      let new_state = State.next state M.trans in
-      transition (State.verify_state new_state) new_state
+  let str_len = String.length Sys.argv.(2) in
+  if M.validate_json_print () = 1 then
+    let init_str =
+      if str_len < 16 then
+        (Sys.argv.(2)^(String.make (16 - str_len) M.blank.[0]))
+      else Sys.argv.(2)
     in
-    transition 1 (State.create M.trans M.initial Sys.argv.(2))*)
+    (* transition serves as the core loop of the program *)
+    let rec transition state =
+      let status = (State.verify_state state M.finals) in
+      if status > -3 && status < 1 then
+        exit_status status
+      else
+        transition (State.next state M.trans)
+    in
+    transition (State.create M.initial init_str M.blank)
 
 let () =
   match args_valid Sys.argv with
