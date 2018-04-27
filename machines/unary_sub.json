@@ -22,7 +22,7 @@
 
 		"subone": [
 			{ "read": "1", "to_state": "subone", "write": "1", "action": "LEFT"},
-			{ "read": "=", "to_state": "skip", "write": "-", "action": "LEFT"}
+			{ "read": "-", "to_state": "skip", "write": "-", "action": "LEFT"}
 		],
 		
 		"skip": [

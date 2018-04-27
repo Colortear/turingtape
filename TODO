@@ -3,4 +3,6 @@ TODO:
 	-- need to add more rigrous json parse testing.
 	-- need to handle invalid file path exception.
 	-- build function to print the parsed json before running loop.
-	-- The pprogram stops prematurely thinking it cannot finish.
+	-- Seperate the series of nested loops in next funciton
+	-- The view is lagging behing the index by one when it gets close
+			to the end of the string.

@@ -22,6 +22,6 @@ sanity:
 	ocamlfind query yojson
 
 test: native
-	echo '{"hello": "json"}' | ./turing.native
+	./turing.native machines/unary_sub.json "111-11="
 
 .PHONY: all clean byte native profile debug sanity test

@@ -1,5 +1,4 @@
-open Machine
-(* Files as modules: Utils, Machine *)
+(* Files as modules: Machine, State *)
 
 (* 1. validate args
  * 2. parse json file into machine object (object holds state type)
@@ -13,6 +12,9 @@ open Machine
  * 5. if the args are invalid then output usage, if machine is built
  *      incorrectly print_error
 *)
+
+open Machine
+open State
 
 let usage =
   ("usage: "^Sys.argv.(0)^" [-h] jsonfile input")
@@ -28,9 +30,9 @@ optional arguments:
 
 let exit_status code =
   match code with
-  | -2 -> print_endline "Machine stopped: operation could not be found"
+  | -2 -> print_endline "Machine stopped: operation could not be found."
   | -1 -> print_endline "Machine stopped: end state was impossible."
-  | 0 -> print_endline "............HALT............"
+  | 0 -> print_endline "\027[32m\nTERMINATED SUCCESS\n\027[0m"
   | _ -> print_endline "this should never happen"
 
 let args_valid args =

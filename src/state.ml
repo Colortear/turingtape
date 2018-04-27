@@ -20,9 +20,6 @@ let print_state state trans =
     let rhs = if idx < view + 15 then
         String.sub tape (idx + 1) ((view + 15) - idx)
       else "" in
-    let printable_tape =
-      lhs^"<"^(String.make 1 tape.[idx])^">"^rhs^" "
-    in
     let print_dir =
       match dir with
       | Left -> "LEFT"
@@ -30,8 +27,12 @@ let print_state state trans =
       | Nil -> ""
     in
     let operation =
-      ("("^cur_t^", "^read^") -> ("^to_state^", "^write^", "^print_dir^")") in
-    print_endline (printable_tape^operation)
+      ("("^cur_t^", "^read^") -> ("^
+       to_state^", "^write^", "
+       ^print_dir^")")
+    in
+    Printf.printf "[%s\027[35m%c\027[0m%s] %s\n"
+      lhs tape.[idx] rhs operation
 
 let next state trans =
   match state with
@@ -74,7 +75,7 @@ let next state trans =
         | hd::tl ->
           let (read, to_state, write, dir) = hd in
           if read.[0] = tape.[index] then
-            transition hd
+              transition hd
           else
             aux tl 
       in
