@@ -15,7 +15,7 @@ let print_state state trans =
   | Nilt -> print_endline "Something went wrong."
   | S(tape,idx,cur_t,view,blank) ->
     let lhs = if idx > view then
-        String.sub tape view idx
+        String.sub tape view (idx - view)
       else "" in
     let rhs = if idx < view + 15 then
         String.sub tape (idx + 1) ((view + 15) - idx)
@@ -31,7 +31,7 @@ let print_state state trans =
        to_state^", "^write^", "
        ^print_dir^")")
     in
-    Printf.printf "[%s\027[35m%c\027[0m%s] %s\n"
+    Printf.printf "[%s\027[36m%c\027[0m%s] %s\n"
       lhs tape.[idx] rhs operation
 
 let next state trans =

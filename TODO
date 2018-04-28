@@ -4,5 +4,9 @@ TODO:
 	-- need to handle invalid file path exception.
 	-- build function to print the parsed json before running loop.
 	-- Seperate the series of nested loops in next funciton
-	-- The view is lagging behing the index by one when it gets close
-			to the end of the string.
+
+long term:
+
+	-- add time complexity measurement.
+	-- enhance visualization using the Graphics lib
+	-- implement for website

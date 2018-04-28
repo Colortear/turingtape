@@ -25,6 +25,7 @@ sig
   val finals : string list
   val trans : s
   val validate_json_print : unit -> int
+  val print_machine : unit -> unit
 end
 
 let member_to_string js name =
@@ -97,18 +98,61 @@ struct
       in
       Trans(aux tbl trans_list)
 
+  let print_machine () =
+  let rec print_name tn namestart =
+    let idx =
+      if tn = namestart then (tn + String.length name)
+      else (tn + 1)
+    in
+    let print =
+      if tn = namestart then name
+      else if tn = 60 || tn = 120 || tn = 180 ||
+              tn = 240 || tn = 300 then "*\n"
+      else if tn < 60 || tn = 61 || tn = 121 ||
+              tn = 181 || tn >= 241 then "*"
+      else " "
+    in
+    print_string print;
+    if tn < 300 then print_name idx namestart
+  in
+  let print_list_string name l =
+    let rec aux ll =
+      match ll with
+      | [] -> ""
+      | [hd] -> hd^" ]"
+      | hd::tl -> hd^", "^(aux tl)
+    in
+    print_endline (name^": [ "^(aux l))
+  in
+(*  let print_trans t s =
+    let rec aux1 s' 
+    finish this*)
+  begin
+    print_name 1 (150-((String.length name)/2));
+    print_list_string "Alphabet" alphabet;
+    print_list_string "States" states;
+    Printf.printf "Initial: %s\n" initial;
+    print_list_string "Finals" finals;
+   (* print_trans trans states;*)
+    print_endline "************************************************************"
+  end
+
   let validate_json_print () =
     if (String.length name = 0) ||
        alphabet = [] || (String.length blank != 1) ||
        states = [] || (String.length initial = 0) ||
-       finals = [] (*|| trans = Nil*) then -1
-    else 1 (*needs so many error cases added to this omg lmao fuc *)
-      (*print the json values if successful, fail with -1 otherwise*)
+       finals = [] || trans = N then -1
+    else
+      begin
+        print_machine();
+        1
+      end (*needs so many error cases added to this omg lmao fuc *)
+    (*print the json values if successful, fail with -1 otherwise*)
 end
 
 (*move the below code to a debug file for unit testing
  *
-let print_list l =
+  let print_list l =
   let rec aux ll =
     match ll with
     | [] -> print_endline ""
@@ -120,7 +164,7 @@ let print_list l =
   in
   aux l
 
-let print_from_table h tt =
+  let print_from_table h tt =
   let rec loop y =
     match y with
     | [] -> print_endline ""
@@ -144,7 +188,7 @@ let print_from_table h tt =
     with Not_found -> print_endline "no_listing"
   end
 
-let print_trans t s =
+  let print_trans t s =
   match t with
   | N -> print_endline "NULL"
   | Trans(tt) ->
@@ -160,7 +204,7 @@ let print_trans t s =
     aux s
 
 
-let () =
+  let () =
   if Machine.validate_json() = 1 then print_endline "Validate Success!"
   else print_endline "Validate Failure";
   print_endline Machine.name;
