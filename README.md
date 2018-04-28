@@ -2,6 +2,10 @@
 
 A simulation of a single-tape turing machine using json formatted files to describe the machine.
 
+## Dependencies
+
+Ocaml, Ocamlc, Ocamlbuild, and Opam are required to build this project. The operating systems 
+
 ## Build
 
 In the project directory enter `make`. Enter `make native` and `make byte` for native and bytecode binaries respectively.

@@ -1,7 +1,7 @@
 OCB_FLAGS = -use-ocamlfind -I src
 OCB = ocamlbuild $(OCB_FLAGS)
 
-all: native byte
+all: install_deps native byte
 
 clean:
 	$(OCB) -clean
@@ -23,5 +23,9 @@ sanity:
 
 test: native
 	./turing.native machines/unary_sub.json "111-11="
+
+install_deps:
+	@echo "\033[32msearching for dependencies....\033[0m"
+	@opam install yojson
 
 .PHONY: all clean byte native profile debug sanity test
