@@ -114,15 +114,16 @@ struct
       in
       print_string print;
       if tn < 300 then print_name idx namestart
+      else print_string "\027[0m"
     in
-    let print_list_string name l =
+    let print_list_string color name l =
       let rec aux ll =
         match ll with
         | [] -> ""
-        | [hd] -> hd^" ]"
-        | hd::tl -> hd^", "^(aux tl)
+        | [hd] -> hd^" \027[0m]"
+        | hd::tl -> hd^"\027[0m, "^color^(aux tl)
       in
-      print_endline (name^": [ "^(aux l))
+      print_endline (name^": [ "^color^(aux l))
     in
     let print_trans t s =
       match t with
@@ -139,19 +140,26 @@ struct
               else if dir = Right then "RIGHT"
               else "NO_INS"
             in
-            Printf.printf "(%s, %s) -> (%s, %s, %s)\n" l r ts w d
+            Printf.printf "(\027[33m%s\027[0m, \027[36m%s\027[0m) -> (\027[36m%s\027[0m, \027[36m%s\027[0m, \027[32m%s\027[0m)\n" l r ts w d
           in
+          let rec is_final c =
+            let ret = try List.find (fun x -> (String.compare x c) = 0) finals
+            with Not_found -> ""
+            in
+            if String.compare "" ret = 0 then false else true in
           if entry != [] then
             List.iter print entry
-          else Printf.printf "%s not found." l
+          else if (is_final l) != true then
+            Printf.printf "%s not found." l
         in
         List.iter iter_table_print s in
     begin
+      print_string "\027[35m";
       print_name 1 (150-((String.length name)/2));
-      print_list_string "Alphabet" alphabet;
-      print_list_string "States" states;
-      Printf.printf "Initial: %s\n" initial;
-      print_list_string "Finals" finals;
+      print_list_string "\027[36m" "Alphabet" alphabet;
+      print_list_string "\027[33m" "States" states;
+      Printf.printf "Initial: \027[33m%s\027[0m\n" initial;
+      print_list_string "\027[33m" "Finals" finals;
       print_trans trans states;
       print_endline "************************************************************"
     end

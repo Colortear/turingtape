@@ -9,6 +9,11 @@ let hashtbl_get tbl input =
   try Hashtbl.find tbl input with
     Not_found -> []
 
+let print_tape state =
+  match state with
+  | Nilt -> print_endline "~~~~~No state~~~~~"
+  | S(s,_,_,_,_) -> print_endline ("\n\t\027[36m["^s^"] ∈ Σ*\027[0m")
+
 let print_state state trans =
   let (read,to_state,write,dir) = trans in
   match state with
@@ -27,12 +32,12 @@ let print_state state trans =
       | Nil -> ""
     in
     let operation =
-      ("("^cur_t^", "^read^") -> ("^
-       to_state^", "^write^", "
-       ^print_dir^")")
+      ("(\027[33m"^cur_t^"\027[0m, \027[36m"^read^
+       "\027[0m) -> (\027[33m"^
+       to_state^"\027[0m, \027[36m"^write^"\027[0m, \027[32m"
+       ^print_dir^"\027[0m)")
     in
-    Printf.printf "[%s\027[36m%c\027[0m%s] %s\n"
-      lhs tape.[idx] rhs operation
+    Printf.printf "[%s\027[36m%c\027[0m%s] %s\n" lhs tape.[idx] rhs operation
 
 let next state trans =
   match state with

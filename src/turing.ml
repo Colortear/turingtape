@@ -31,9 +31,9 @@ optional arguments:
 let exit_status code =
   match code with
   | -2 -> print_endline "Machine stopped: operation could not be found."
-  | -1 -> print_endline "Machine stopped: end state was impossible."
-  | 0 -> print_endline "\027[32m\nTERMINATED SUCCESS\n\027[0m"
-  | _ -> print_endline "this should never happen"
+  | -1 -> print_endline "\tMachine stopped: end state was impossible."
+  | 0 -> print_endline "\027[32m\nEOT\n\027[0m"
+  | _ -> print_endline "\tthis should never happen"
 
 let args_valid args =
   let len = Array.length args in
@@ -63,11 +63,13 @@ let main_loop() =
         (Sys.argv.(2)^(String.make (16 - str_len) M.blank.[0]))
       else Sys.argv.(2)
     in
-    (* transition serves as the core loop of the program *)
     let rec transition state =
       let status = (State.verify_state state M.finals) in
       if status > -3 && status < 1 then
-        exit_status status
+        begin
+          State.print_tape state;
+          exit_status status
+        end
       else
         transition (State.next state M.trans)
     in
