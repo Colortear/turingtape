@@ -99,43 +99,62 @@ struct
       Trans(aux tbl trans_list)
 
   let print_machine () =
-  let rec print_name tn namestart =
-    let idx =
-      if tn = namestart then (tn + String.length name)
-      else (tn + 1)
+    let rec print_name tn namestart =
+      let idx =
+        if tn = namestart then (tn + String.length name)
+        else (tn + 1)
+      in
+      let print =
+        if tn = namestart then name
+        else if tn = 60 || tn = 120 || tn = 180 ||
+                tn = 240 || tn = 300 then "*\n"
+        else if tn < 60 || tn = 61 || tn = 121 ||
+                tn = 181 || tn >= 241 then "*"
+        else " "
+      in
+      print_string print;
+      if tn < 300 then print_name idx namestart
     in
-    let print =
-      if tn = namestart then name
-      else if tn = 60 || tn = 120 || tn = 180 ||
-              tn = 240 || tn = 300 then "*\n"
-      else if tn < 60 || tn = 61 || tn = 121 ||
-              tn = 181 || tn >= 241 then "*"
-      else " "
+    let print_list_string name l =
+      let rec aux ll =
+        match ll with
+        | [] -> ""
+        | [hd] -> hd^" ]"
+        | hd::tl -> hd^", "^(aux tl)
+      in
+      print_endline (name^": [ "^(aux l))
     in
-    print_string print;
-    if tn < 300 then print_name idx namestart
-  in
-  let print_list_string name l =
-    let rec aux ll =
-      match ll with
-      | [] -> ""
-      | [hd] -> hd^" ]"
-      | hd::tl -> hd^", "^(aux tl)
-    in
-    print_endline (name^": [ "^(aux l))
-  in
-(*  let print_trans t s =
-    let rec aux1 s' 
-    finish this*)
-  begin
-    print_name 1 (150-((String.length name)/2));
-    print_list_string "Alphabet" alphabet;
-    print_list_string "States" states;
-    Printf.printf "Initial: %s\n" initial;
-    print_list_string "Finals" finals;
-   (* print_trans trans states;*)
-    print_endline "************************************************************"
-  end
+    let print_trans t s =
+      match t with
+      | N -> print_endline "No transitions"
+      | Trans(tbl) ->
+        let iter_table_print l =
+          let entry = try Hashtbl.find tbl l with
+              Not_found -> []
+          in
+          let print e =
+            let (r,ts,w,dir) = e in
+            let d =
+              if dir = Left then "LEFT"
+              else if dir = Right then "RIGHT"
+              else "NO_INS"
+            in
+            Printf.printf "(%s, %s) -> (%s, %s, %s)\n" l r ts w d
+          in
+          if entry != [] then
+            List.iter print entry
+          else Printf.printf "%s not found." l
+        in
+        List.iter iter_table_print s in
+    begin
+      print_name 1 (150-((String.length name)/2));
+      print_list_string "Alphabet" alphabet;
+      print_list_string "States" states;
+      Printf.printf "Initial: %s\n" initial;
+      print_list_string "Finals" finals;
+      print_trans trans states;
+      print_endline "************************************************************"
+    end
 
   let validate_json_print () =
     if (String.length name = 0) ||
@@ -147,7 +166,7 @@ struct
         print_machine();
         1
       end (*needs so many error cases added to this omg lmao fuc *)
-    (*print the json values if successful, fail with -1 otherwise*)
+      (*print the json values if successful, fail with -1 otherwise*)
 end
 
 (*move the below code to a debug file for unit testing

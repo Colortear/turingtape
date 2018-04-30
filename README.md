@@ -4,7 +4,7 @@ A simulation of a single-tape turing machine using json formatted files to descr
 
 ## Dependencies
 
-Ocaml, Ocamlc, Ocamlbuild, and Opam are required to build this project. On debian based systems the packages `ocam`l and `opam` are the only necessary installations, however this may differ from system to system. A script is provided in the setup folder for installation of these packages on a debian based system. The script will take care of opam setup as well.
+Ocaml, Ocamlc, Ocamlbuild, and Opam are required to build this project. On debian based systems the packages `ocaml` and `opam` are the only necessary installations, however this may differ from system to system. A script is provided in the setup folder for installation of these packages on a debian based system. The script will take care of opam setup as well.
 
 ## Build
 

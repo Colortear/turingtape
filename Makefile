@@ -1,7 +1,7 @@
 OCB_FLAGS = -use-ocamlfind -I src
 OCB = ocamlbuild $(OCB_FLAGS)
 
-all: install_deps native byte
+all: native byte
 
 clean:
 	$(OCB) -clean
