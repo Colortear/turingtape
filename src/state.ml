@@ -9,10 +9,12 @@ let hashtbl_get tbl input =
   try Hashtbl.find tbl input with
     Not_found -> []
 
-let print_tape state =
+let print_tape state blank =
   match state with
   | Nilt -> print_endline "~~~~~No state~~~~~"
-  | S(s,_,_,_,_) -> print_endline ("\n\t\027[36m["^s^"] ∈ Σ*\027[0m")
+  | S(s,_,_,_,_) ->
+    let trimmed = Util.trim ~blank:blank s in
+    print_endline ("\n\027[36m"^trimmed^" ∈ Σ*\027[0m\n")
 
 let print_state state trans =
   let (read,to_state,write,dir) = trans in

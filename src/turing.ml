@@ -32,7 +32,7 @@ let exit_status code =
   match code with
   | -2 -> print_endline "Machine stopped: operation could not be found."
   | -1 -> print_endline "\tMachine stopped: end state was impossible."
-  | 0 -> print_endline "\027[32m\nEOT\n\027[0m"
+  | 0 -> print_endline "\027[32mSuccessful run\n\027[0m"
   | _ -> print_endline "\tthis should never happen"
 
 let args_valid args =
@@ -67,12 +67,14 @@ let main_loop() =
       let status = (State.verify_state state M.finals) in
       if status > -3 && status < 1 then
         begin
-          State.print_tape state;
+          State.print_tape state M.blank;
           exit_status status
         end
       else
         transition (State.next state M.trans)
     in
+    let initial_state = State.create M.initial init_str M.blank in
+    print_tape initial_state  M.blank;
     transition (State.create M.initial init_str M.blank)
 
 let () =
