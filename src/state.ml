@@ -14,7 +14,7 @@ let print_tape state blank =
   | Nilt -> print_endline "~~~~~No state~~~~~"
   | S(s,_,_,_,_) ->
     let trimmed = Util.trim ~blank:blank s in
-    print_endline ("\n\027[36m"^trimmed^" ∈ Σ*\027[0m\n")
+    print_endline ("\n\027[36m"^trimmed^" ∈  Σ*\027[0m\n")
 
 let print_state state trans =
   let (read,to_state,write,dir) = trans in
