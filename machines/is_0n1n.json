@@ -1,0 +1,35 @@
+{
+	"name"		: "is_0n1n",
+	"alphabet"	: ["0","1",".","n","y"],
+	"blank"		: ".",
+	"states"	: ["start","rev","fwd","back","wrong"],
+	"initial"	: "start",
+	"final"		: ["HALT"],
+	"transitions": {
+		"start": [
+			{"read": "1", "to_state": "wrong", "write": "1", "action": "RIGHT"},
+			{"read": "0", "to_state": "fwd", "write": ".", "action": "RIGHT"},
+			{"read": ".", "to_state": "HALT", "write": "y", "action": "RIGHT"}
+		],
+		"fwd": [
+			{"read": "0", "to_state": "fwd", "write": "0", "action": "RIGHT"},
+			{"read": "1", "to_state": "fwd", "write": "1", "action": "RIGHT"},
+			{"read": ".", "to_state": "rev", "write": ".", "action": "LEFT"}
+		],
+		"rev": [
+			{"read": "0", "to_state": "wrong", "write": "0", "action": "RIGHT"},
+			{"read": "1", "to_state": "back", "write": ".", "action": "LEFT"},
+			{"read": ".", "to_state": "HALT", "write": "y", "action": "LEFT"}
+		],
+		"back": [
+			{"read": "1", "to_state": "back", "write": "1", "action": "LEFT"},
+			{"read": "0", "to_state": "back", "write": "0", "action": "LEFT"},
+			{"read": ".", "to_state": "start", "write": ".", "action": "RIGHT"}
+		],
+		"wrong": [
+			{"read": "0", "to_state": "wrong", "write": "0", "action": "RIGHT"},
+			{"read": "1", "to_state": "wrong", "write": "1", "action": "RIGHT"},
+			{"read": ".", "to_state": "HALT", "write": "n", "action": "RIGHT"}
+		]
+	}
+}

@@ -168,8 +168,12 @@ struct
     if (String.length name = 0) ||
        alphabet = [] || (String.length blank != 1) ||
        states = [] || (String.length initial = 0) ||
-       finals = [] || trans = N then -1
-    else
+       finals = [] || trans = N then
+      begin
+        print_endline "bad json format";
+        -1
+      end
+    else 
       begin
         print_machine();
         1

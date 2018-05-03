@@ -10,11 +10,25 @@ let hashtbl_get tbl input =
   try Hashtbl.find tbl input with
     Not_found -> []
 
+let check_chars s l =
+  let rec match_char c ll =
+    match ll with
+    | [] -> -1
+    | hd::tl ->
+      if hd.[0] = c then 1
+      else match_char c tl
+  in
+  let rec aux idx =
+    if match_char s.[idx] l = -1 then -1
+    else if idx < 0 then 1
+    else aux (idx - 1)
+  in
+  aux (String.length s)
+
 let print_tape state blank =
   match state with
   | Nilt -> print_endline "~~~~~No state~~~~~"
   | S(s,_,_,_,_) ->
-    print_endline s;
     let trimmed = Util.trim ~blank:blank s in
     print_endline ("\n\027[36m"^trimmed^" ∈ Σ*\027[0m\n")
 

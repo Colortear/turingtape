@@ -76,7 +76,6 @@ let main_loop() =
     let initial_state = State.create M.initial init_str M.blank in
     print_tape initial_state  M.blank;
     transition (State.create M.initial init_str M.blank)
-  else print_endline "json bad format"
 
 let () =
   match args_valid Sys.argv with

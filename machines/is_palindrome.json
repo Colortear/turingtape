@@ -2,7 +2,7 @@
 	"name"		: "is_palindrome",
 	"alphabet"	: ["0", "1", ".","n","y"],
 	"blank"		: ".",
-	"states"	: ["start","1toend","0toend","1tostrt","0tostrt","delend1","delstrt1","delend0","delend0","HALT"],
+	"states"	: ["start","1toend","0toend","1tostrt","0tostrt","delend1","delstrt1","delend0","delend0","HALT","wrong"],
 	"initial"	: "start",
 	"final"		: ["HALT"],
 
@@ -28,7 +28,7 @@
 
 		"delend1": [
 			{"read": "1", "to_state": "rev", "write": ".", "action": "LEFT"},
-			{"read": "0", "to_state": "HALT", "write": "n", "action": "RIGHT"},
+			{"read": "0", "to_state": "wrong", "write": "0", "action": "RIGHT"},
 			{"read": ".", "to_state": "HALT", "write": "y", "action": "RIGHT"}
 		],
 
@@ -40,7 +40,7 @@
 
 		"delstrt1": [
 			{"read": "1", "to_state": "start", "write": ".", "action": "RIGHT"},
-			{"read": "0", "to_state": "HALT", "write": "n", "action": "RIGHT"},
+			{"read": "0", "to_state": "wrong", "write": "0", "action": "RIGHT"},
 			{"read": ".", "to_state": "HALT", "write": "y", "action": "RIGHT"}
 		],
 
@@ -52,7 +52,7 @@
 
 		"delend0": [
 			{"read": "0", "to_state": "rev", "write": ".", "action": "LEFT"},
-			{"read": "1", "to_state": "HALT", "write": "n", "action": "LEFT"},
+			{"read": "1", "to_state": "wrong", "write": "1", "action": "RIGHT"},
 			{"read": ".", "to_state": "HALT", "write": "y", "action": "RIGHT"}
 		],
 
@@ -64,8 +64,13 @@
 
 		"delstrt0": [
 			{"read": "0", "to_state": "start", "write": ".", "action": "RIGHT"},
-			{"read": "1", "to_state": "HALT", "write": "n", "action": "RIGHT"},
+			{"read": "1", "to_state": "wrong", "write": "1", "action": "RIGHT"},
 			{"read": ".", "to_state": "HALT", "write": "y", "action": "RIGHT"}
+		],
+		"wrong": [
+			{"read": "0", "to_state": "wrong", "write": "0", "action": "RIGHT"},
+			{"read": "1", "to_state": "wrong", "write": "1", "action": "RIGHT"},
+			{"read": ".", "to_state": "HALT", "write": "n", "action": "LEFT"}
 		]
 	}
 }
