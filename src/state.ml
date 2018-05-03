@@ -3,7 +3,8 @@ open Machine
 (* tape * cur_index * cur_trans * range_start * blank_char *)
 type t = Nilt | S of string * int * string * int * string
 
-let create init input_string blank = S(input_string,0,init,0,blank)
+let create init input_string blank = 
+  S(input_string,0,init,0,blank)
 
 let hashtbl_get tbl input =
   try Hashtbl.find tbl input with
