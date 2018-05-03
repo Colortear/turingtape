@@ -22,7 +22,7 @@ let trim ?blank:(b="") s =
       let right_idx =
         move_idx length false (is_trimming length trim_len) in
       if left_idx = start && right_idx = length then
-        String.sub s left_idx (right_idx + 1)
+        String.sub s left_idx ((right_idx + 1) - left_idx)
       else
         aux left_idx right_idx
   in
