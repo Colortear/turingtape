@@ -1,4 +1,4 @@
-OCB_FLAGS = -use-ocamlfind -I src
+OCB_FLAGS = -cflag -unsafe-string -use-ocamlfind -I src
 OCB = ocamlbuild $(OCB_FLAGS)
 
 all: native byte
