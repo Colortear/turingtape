@@ -67,6 +67,7 @@ let next state trans =
       let l = hashtbl_get tbl t in
       let move_head tape' dir' index' ts' view' =
         let ret_tape =
+          (* reset tape with new entrry here*)
           if index' < 0 then (blank^tape')
           else if index' = String.length tape' then (tape'^blank)
           else tape'
